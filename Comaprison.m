@@ -165,7 +165,7 @@ plot(error_wmp/montecarloiterations);
 title('L-2 Error vs K');
 xlabel('L-2 error in estimate');
 ylabel('K');
-legend('OMP','LS-OMP','MP','WMP (t=0.5)','Threshold');
+legend('OMP','LS-OMP','MP','WMP');
 
 figure(2)
 hold on
@@ -176,4 +176,4 @@ plot(Pe_sup_wmp/montecarloiterations);
 title('P_e Support vs K');
 xlabel('Prob of mismatch in support');
 ylabel('K');
-legend('OMP','LS-OMP','MP','WMP','Threshold');
+legend('OMP','LS-OMP','MP','WMP');

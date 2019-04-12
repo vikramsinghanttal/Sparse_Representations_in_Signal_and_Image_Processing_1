@@ -25,9 +25,9 @@ A = randn(n,m);                 % Dictionary matrix
 % A(:,m) = mean(A(:,1:spark-1),2);% Introducing spark though unneccessary
 % A  = A./vecnorm(A);           % Not supported by R2015a
 A = A*diag(1./sqrt(diag(A'*A)));% making columns unit norm
-b = randn(n,1);
 x = zeros(m,1);
 x(nonz_idx) = randn(K,1); 
+b = A*x;
 
 %% Auxilliary Variables
 k   = 0;

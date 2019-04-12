@@ -37,7 +37,7 @@ for mci=1:montecarloiterations
         S_k = [];
         E_i = inf;
         z_i = 0;
-
+        [A_sorted,sorted_idx] = sort((A'*b));
 %         tic
         %% OMP Algorithm
         while(norm(r_k)>threshold && k<m)
