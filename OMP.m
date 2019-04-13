@@ -19,7 +19,6 @@ error_omp = zeros(15,1);
 Pe_sup_omp= zeros(15,1);
 for mci=1:montecarloiterations
     for K=1:15
-
     %% Generating A, x and b
     % K = randi([1,n/2]);             % No. of nonzero parameters in x
     nonz_idx = randi([1,120],K,1);  % Indices which will contain the non zero elements in x

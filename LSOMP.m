@@ -13,54 +13,70 @@ clc;
 
 %% Setting the parameters
 n = 50; m =120;
-spark = 13;
 threshold = 0.1;
+montecarloiterations = 10;
+error_lsomp = zeros(15,1);
+Pe_sup_lsomp= zeros(15,1);
+for mci=1:montecarloiterations
+    for K=1:15
+    %% Generating A, x and b
+    % K = randi([1,n/2]);             % No. of nonzero parameters in x
+    nonz_idx = randi([1,120],K,1);  % Indices which will contain the non zero elements in x
 
-%% Generating A, x and b
-K = randi([1,n/2]);             % No. of nonzero parameters in x
-nonz_idx = randi([1,120],K,1);  % Indices which will contain the non zero elements in x
+    % A=sqrt(0.5)*(randn(n,m)+1i*randn(n,m));
+    A = randn(n,m);                 % Dictionary matrix
+    % A  = A./vecnorm(A);           % Not supported by R2015a
+    A = A*diag(1./sqrt(diag(A'*A)));% making columns unit norm
+    x = zeros(m,1);
+    x(nonz_idx) = 1+rand(K,1); 
+    b = A*x;
+        %% Auxilliary Variables
+        k   = 0;
+        r_k = b;
+        S_k = [];
+        E_i = inf;
+        z_i = 0;
+        A_idx = 1:1:m; 
+        best_idx = 0;
 
-% A=sqrt(0.5)*(randn(n,m)+1i*randn(n,m));
-A = randn(n,m);                 % Dictionary matrix
-% A(:,m) = mean(A(:,1:spark-1),2);% Introducing spark though unneccessary
-% A  = A./vecnorm(A);           % Not supported by R2015a
-A = A*diag(1./sqrt(diag(A'*A)));% making columns unit norm
-x = zeros(m,1);
-x(nonz_idx) = randn(K,1); 
-b = A*x;
-
-%% Auxilliary Variables
-k   = 0;
-r_k = b;
-S_k = [];
-E_i = inf;
-z_i = 0;
-A_idx = 1:1:m; 
-best_idx = 0;
-tic
-%% LS-OMP Algorithm
-while(E_i > threshold && k<m)
-    E_i = inf;
-    for i  = 1:m-k
-        As = [A(:,S_k) A(:,A_idx(i))];
-        x_i= (As'*As)\As'*b;
-        r_k=norm(As*x_i-b);
-        if E_i > r_k
-           E_i = r_k;
-           ii  = i;
-           x_k = x_i;
-           best_idx = A_idx(i);
+    %% LS-OMP Algorithm
+        while(E_i > threshold && k<m)
+            E_i = inf;
+            for i  = 1:m-k
+                As = [A(:,S_k) A(:,A_idx(i))];
+                x_i= (As'*As)\(As'*b);
+                norm_rk=norm(As*x_i-b);
+                if E_i > norm_rk
+                   E_i = norm_rk;
+                   best_idx  = i;
+                   x_k = x_i;
+                end
+            end
+            k = k+1;
+            S_k = [S_k A_idx(best_idx)];
+            A_idx(best_idx)=[];
         end
+
+    %% Results
+        x_lsomp = zeros(m,1);
+        x_lsomp(S_k)=x_k;
+        error_lsomp(K) = error_lsomp(K)+norm(x_lsomp-x)/norm(x);
+        Pe_sup_lsomp(K)= Pe_sup_lsomp(K) + 1-sum(x&x_lsomp)/max(nnz(x),nnz(x_lsomp));
     end
-    k = k+1;
-    S_k = [S_k best_idx];
-    A_idx(ii)=[];
+    mci
 end
-toc
-%% Results
-x_lsomp = zeros(m,1);
-x_lsomp(S_k)=x_k;
-r_k=norm(A*x_lsomp-b);
-disp(['No of non-zeros in original solution: ' num2str(K)]);
-disp(['OMP provided a solution with : ' num2str(length(S_k)) ' non zero elements']);
-disp(['||r_k||  : ' num2str((r_k)) ' and error : ' num2str(norm(x-x_lsomp))]);
+figure(1)
+plot(error_lsomp/montecarloiterations);
+title('L-2 Error vs K');
+ylabel('L-2 error in estimate');
+xlabel('K');
+p.LineWidth = 2;
+lgd1.FontSize = 14;
+
+figure(2)
+plot(Pe_sup_lsomp/montecarloiterations);
+title('P_e Support vs K');
+ylabel('Prob of mismatch in support');
+xlabel('K');
+p.LineWidth = 2;
+lgd1.FontSize = 14;

@@ -202,7 +202,7 @@ p = semilogx(x_ax,error_thr,'c');
 p.LineWidth = 1.5;
 title(['L_2 Estimation Error vs K (Error Tolerance = ' num2str(threshold) ' )']);
 ylabel('Avg. Relative L_2 error in estimates');
-xlabel('Cordinality of the solution (K)');
+xlabel('cordinality of the solution (K)');
 legend('OMP','LS-OMP','MP',['WMP (t=' num2str(t) ')'],'Threshold');
 grid on;
 
@@ -227,12 +227,9 @@ grid on;
 
 Pe_sup = [x_ax	Pe_sup_omp	Pe_sup_lsomp	Pe_sup_mp	Pe_sup_wmp	Pe_sup_thr];
 L2_err = [x_ax	error_omp	error_lsomp     error_mp    error_wmp   error_thr ];
-
-fid = fopen('comparison_greedy_algorithms_Pe_Sup.txt','wt');
-fprintf(fid, '\t\t x   \t\t Pe_supp_omp \t Pe_supp_lsomp \t Pe_supp_mp \t Pe_supp_wmp \t Pe_supp_thr\n');
-fclose(fid);
-fid = fopen('comparison_greedy_algorithms_L2_error.txt','wt');
-fprintf(fid, '\t\t x   \t\t Error_omp  \t Error_lsomp  \t Error_mp  \t\t Error_wmp  \t Error_thr\n');
-fclose(fid);
-save('comparison_greedy_algorithms_L2_error.txt','Pe_sup','-ascii','-append');
-save('comparison_greedy_algorithms_Pe_Sup.txt','L2_err','-ascii','-append');
+str_Pe = 'x \t Pe_supp_omp \t Pe_supp_lsomp \t Pe_supp_mp \t Pe_supp_wmp \t Pe_supp_thr\n';
+str_err ='x \t Error_omp  \t Error_lsomp  \t Error_mp  \t Error_wmp  \t Error_thr\n';
+z
+save('comparison_greedy_algorithms_L2_error.txt','str_Pe','Pe_sup','-ascii');
+% save('comparison_greedy_algorithms_Pe_Sup.txt' , 'str_err','-ascii');
+save('comparison_greedy_algorithms_Pe_Sup.txt' ,'str_err', 'L2_err','-ascii');

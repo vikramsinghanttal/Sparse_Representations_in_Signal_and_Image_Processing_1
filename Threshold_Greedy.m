@@ -14,12 +14,11 @@ clc;
 %% Setting the parameters
 n = 50; m =120;
 threshold = 0.1;
-montecarloiterations = 1000;
-error_omp = zeros(15,1);
-Pe_sup_omp= zeros(15,1);
+montecarloiterations = 100;
+error_thr = zeros(15,1);
+Pe_sup_thr= zeros(15,1);
 for mci=1:montecarloiterations
     for K=1:15
-
     %% Generating A, x and b
     % K = randi([1,n/2]);             % No. of nonzero parameters in x
     nonz_idx = randi([1,120],K,1);  % Indices which will contain the non zero elements in x
@@ -37,29 +36,27 @@ for mci=1:montecarloiterations
         S_k = [];
         E_i = inf;
         z_i = 0;
-        [A_sorted,sorted_idx] = sort((A'*b));
+        [A_sorted,sorted_idx] = sort(abs(A'*b),'descend');
 %         tic
         %% OMP Algorithm
         while(norm(r_k)>threshold && k<m)
-            z   = A'*r_k;
-            [M,I]= max(abs(z));
-            S_k = [S_k I];
+            k   = k+1;
+            S_k = [S_k sorted_idx(k)];
             As  = A(:,S_k);
-            x_k = (As'*As)\(As'*b);
+            x_k = As'*b;
             r_k = b - As*x_k;
-            k=k+1;
         end
 %         toc
         %% Results
-        x_omp = zeros(m,1);
-        x_omp(S_k)=x_k;
-        error_omp(K) = error_omp(K)+norm(x_omp-x)/norm(x);
-        Pe_sup_omp(K)=Pe_sup_omp(K)+(1-sum(x&x_omp)/max(nnz(x),nnz(x_omp)));
+        x_thr = zeros(m,1);
+        x_thr(S_k)=x_k;
+        error_thr(K) = error_thr(K)+norm(x_thr-x)/norm(x);
+        Pe_sup_thr(K)=Pe_sup_thr(K)+(1-sum(x&x_thr)/max(nnz(x),nnz(x_thr)));
     end
     mci
 end
 figure(1)
-plot(error_omp/montecarloiterations);
+plot(error_thr/montecarloiterations);
 title('L-2 Error vs K');
 ylabel('L-2 error in estimate');
 xlabel('K');
@@ -67,7 +64,7 @@ p.LineWidth = 2;
 lgd1.FontSize = 14;
 
 figure(2)
-plot(Pe_sup_omp/montecarloiterations);
+plot(Pe_sup_thr/montecarloiterations);
 title('P_e Support vs K');
 ylabel('Prob of mismatch in support');
 xlabel('K');
