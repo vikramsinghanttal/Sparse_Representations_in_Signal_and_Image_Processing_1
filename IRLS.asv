@@ -1,0 +1,59 @@
+clear all;
+clc;
+% rng(120);
+
+%% Setting the parameters
+n = 50; m =120;
+threshold = 0.1;
+montecarloiterations = 100;
+x_lower = 1;
+x_upper = 1;
+error_omp = zeros(15,1);
+Pe_sup_omp= zeros(15,1);
+error_lsomp = zeros(15,1);
+Pe_sup_lsomp= zeros(15,1);
+error_mp = zeros(15,1);
+Pe_sup_mp= zeros(15,1);
+error_wmp = zeros(15,1);
+Pe_sup_wmp= zeros(15,1);
+error_thr = zeros(15,1);
+Pe_sup_thr= zeros(15,1);
+for mci=1:montecarloiterations
+    for K=1:15
+        %% Generating A, x and b
+        nonz_idx = randi([1,120],K,1);  % Indices which will contain the non zero elements in x
+        
+        A = randn(n,m);                 % Dictionary matrix
+        % A  = A./vecnorm(A);           % Not supported by R2015a
+        A = A*diag(1./sqrt(diag(A'*A)));% making columns unit norm
+        x = zeros(m,1);
+        x(nonz_idx) = x_lower+(x_upper-x_lower)*rand(K,1); 
+        b = A*x;
+        %% Auxilliary Variables
+        k   = 0;
+        r_k = b;
+        S_k = [];
+        E_i = inf;
+        z_i = 0;
+        x_k = ones(m,1);
+
+        %% OMP Algorithm
+        while(norm(r_k)>threshold && k<m)
+            V_k = diag((x_k.^-0.75));
+            A_v_tr = A/(V_k);
+        end
+
+            %% Results
+        x_omp = zeros(m,1);
+        x_omp(S_k)=x_k;
+        error_omp(K) = error_omp(K)+norm(x_omp-x)/norm(x);
+        Pe_sup_omp(K)=Pe_sup_omp(K)+(1-sum(x&x_omp)/max(nnz(x),nnz(x_omp)));
+
+    end
+    mci
+end
+error_omp   = error_omp/montecarloiterations;
+error_lsomp = error_lsomp/montecarloiterations;
+
+Pe_sup_omp  = Pe_sup_omp/montecarloiterations;
+Pe_sup_lsomp= Pe_sup_lsomp/montecarloiterations;
